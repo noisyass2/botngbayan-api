@@ -1,0 +1,125 @@
+[
+    {
+        "channel": "speeeedtv",
+        "enabled": true,
+        "soMessageTemplate": "speeeePers Check out @{target.name} over at {target.url} speeeeMaw Give them a follow!!! speeeeDKachow ",
+        "delay": 250,
+        "customCommands": [
+            {
+                "command": "!maw",
+                "responses": [
+                    "maw maw maw",
+                    "maw ka din!",
+                    "mawwwwww"
+                ]
+            },
+            {
+                "command": "!fight",
+                "responses": [
+                    "@speeeedtv hit you with a kachow",
+                    "@jsio07 threw a siombie at you!",
+                    "@pandapoleng rolled over, it did nothing",
+                    "@itsgillibean screamed at your ear, rip ears."
+                ]
+            },
+            {
+                "command": "!raid",
+                "responses": [
+                    "TombRaid TombRaid TombRaid SPEED RAID TombRaid TombRaid TombRaid "
+                ]
+            },
+            {
+                "command": "!subraid",
+                "responses": [
+                    "speeeeDraid speeeeDraid speeeeDraid SPEED RAID speeeeDraid speeeeDraid speeeeDraid  "
+                ]
+            },
+            {
+                "command": "!test",
+                "responses": [
+                    "testing laaaaang",
+                    "testing lng tlga eh"
+                ]
+            }
+        ]
+    },
+    {
+        "channel": "itsgillibean",
+        "soMessageTemplate": "",
+        "delay": 250,
+        "enabled": true,
+        "customCommands": [
+            {
+                "command": "!maw",
+                "responses": [
+                    "maw maw maw",
+                    "maw ka din!",
+                    "mawwwwww"
+                ]
+            },
+            {
+                "command": "!test",
+                "responses": [
+                    "testing laaaaang",
+                    "testing lng tlga eh"
+                ]
+            }
+        ]
+    },
+    {
+        "channel": "phaaaatch",
+        "soMessageTemplate": "",
+        "delay": 250,
+        "customCommands": [
+            {
+                "command": "!test",
+                "responses": [
+                    "testing laaaaang",
+                    "testing lng tlga eh"
+                ]
+            }
+        ]
+    },
+    {
+        "channel": "iampandap",
+        "soMessageTemplate": "",
+        "delay": 250,
+        "customCommands": [
+            {
+                "command": "!test",
+                "responses": [
+                    "testing laaaaang",
+                    "testing lng tlga eh"
+                ]
+            }
+        ]
+    },
+    {
+        "channel": "dcaltv",
+        "soMessageTemplate": "",
+        "delay": 250,
+        "customCommands": [
+            {
+                "command": "!test",
+                "responses": [
+                    "testing laaaaang",
+                    "testing lng tlga eh"
+                ]
+            }
+        ]
+    },
+    {
+        "channel": "itschachatv",
+        "soMessageTemplate": "",
+        "delay": 250,
+        "customCommands": [
+            {
+                "command": "!test",
+                "responses": [
+                    "testing laaaaang",
+                    "testing lng tlga eh"
+                ]
+            }
+        ]
+    }
+]
