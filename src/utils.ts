@@ -69,3 +69,9 @@ async function getOauthToken() {
     console.log(response);
     return response;
 }
+
+
+export async function reconnect() {
+    const followerresponse = await fetch('https://bot-ng-bayan.herokuapp.com/api/reconnect').then(p => {return p})
+    return "done";
+}

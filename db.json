@@ -121,5 +121,103 @@
                 ]
             }
         ]
+    },
+    {
+        "channel": "sorin1092",
+        "soMessageTemplate": "",
+        "delay": 250,
+        "customCommands": [
+            {
+                "command": "!test",
+                "responses": [
+                    "testing laaaaang",
+                    "testing lng tlga eh"
+                ]
+            }
+        ]
+    },
+    {
+        "channel": "asserac",
+        "soMessageTemplate": "",
+        "delay": 250,
+        "customCommands": [
+            {
+                "command": "!test",
+                "responses": [
+                    "testing laaaaang",
+                    "testing lng tlga eh"
+                ]
+            }
+        ]
+    },
+    {
+        "channel": "supremokdelarosa",
+        "soMessageTemplate": "",
+        "delay": 250,
+        "customCommands": [
+            {
+                "command": "!test",
+                "responses": [
+                    "testing laaaaang",
+                    "testing lng tlga eh"
+                ]
+            }
+        ]
+    },
+    {
+        "channel": "vinsuuu",
+        "soMessageTemplate": "",
+        "delay": 250,
+        "customCommands": [
+            {
+                "command": "!test",
+                "responses": [
+                    "testing laaaaang",
+                    "testing lng tlga eh"
+                ]
+            }
+        ]
+    },
+    {
+        "channel": "kono_yakusoku",
+        "soMessageTemplate": "",
+        "delay": 250,
+        "customCommands": [
+            {
+                "command": "!test",
+                "responses": [
+                    "testing laaaaang",
+                    "testing lng tlga eh"
+                ]
+            }
+        ]
+    },
+    {
+        "channel": "jsio07",
+        "soMessageTemplate": "",
+        "delay": 250,
+        "customCommands": [
+            {
+                "command": "!test",
+                "responses": [
+                    "testing laaaaang",
+                    "testing lng tlga eh"
+                ]
+            }
+        ]
+    },
+    {
+        "channel": "shayneengstar",
+        "soMessageTemplate": "",
+        "delay": 250,
+        "customCommands": [
+            {
+                "command": "!test",
+                "responses": [
+                    "testing laaaaang",
+                    "testing lng tlga eh"
+                ]
+            }
+        ]
     }
 ]

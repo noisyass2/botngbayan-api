@@ -98,6 +98,73 @@ router.post('/addchannel', (req, res) => {
         res.send(newChannel);
     }
 });
+router.post('/addcmd', (req, res) => {
+    let db = JSON.parse(fs.readFileSync('./db.json', 'utf-8'));
+    console.log(req.params);
+    console.log(req.body);
+    let channelName = req.body.channel;
+    let command = req.body.command;
+    let message = req.body.message;
+    if (!command.startsWith('!'))
+        command = "!" + command;
+    // find channel in db
+    let exists = db.find((p) => { return p.channel.toLowerCase() == channelName.toLowerCase(); });
+    if (exists) {
+        // find command
+        let customCommand = exists.customCommands.find((p) => p.command == command);
+        if (customCommand) {
+            // command already exists, just add response
+            customCommand.responses.push(message);
+            (0, utils_1.saveDB)(db);
+            res.send("Command already exists, response message added!");
+        }
+        else {
+            // command is new, save command
+            exists.customCommands.push({
+                command: command,
+                responses: [message]
+            });
+            (0, utils_1.saveDB)(db);
+            res.send("New Command added!" + command);
+        }
+    }
+    else {
+        (0, utils_1.saveDB)(db);
+        res.send("Channel not found!");
+    }
+});
+router.post('/delcmd', (req, res) => {
+    let db = JSON.parse(fs.readFileSync('./db.json', 'utf-8'));
+    console.log(req.params);
+    console.log(req.body);
+    let channelName = req.body.channel;
+    let command = req.body.command;
+    // let message = req.body.message;
+    if (!command.startsWith('!'))
+        command = "!" + command;
+    // find channel in db
+    let exists = db.find((p) => { return p.channel.toLowerCase() == channelName.toLowerCase(); });
+    if (exists) {
+        // find command
+        let customCommand = exists.customCommands.find((p) => p.command == command);
+        if (customCommand) {
+            // command already exists, just add response
+            let newCmds = exists.customCommands.filter((value, index, arr) => {
+                return value.command !== command;
+            });
+            console.log(newCmds);
+            exists.customCommands = newCmds;
+            (0, utils_1.saveDB)(db);
+            res.send("Command already exists, response message added!");
+        }
+        else {
+            res.send("Command not found");
+        }
+    }
+    else {
+        res.send("Channel not found!");
+    }
+});
 router.get('/refreshChannels', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // get bot_ng_bayan followers 
     console.log("called refresh Channels");
@@ -115,7 +182,7 @@ router.get('/refreshChannels', (req, res) => __awaiter(void 0, void 0, void 0, f
     let db = JSON.parse(fs.readFileSync('./db.json', 'utf-8'));
     botfollowerchannels.forEach((channelName) => {
         let exists = db.find((p) => { return p.channel.toLowerCase() == channelName.toLowerCase(); });
-        if (!exists) {
+        if (!exists) { // if not, then add
             let newChannel = {
                 channel: channelName,
                 soMessageTemplate: "",
@@ -132,8 +199,9 @@ router.get('/refreshChannels', (req, res) => __awaiter(void 0, void 0, void 0, f
         }
     });
     (0, utils_1.saveDB)(db);
-    // if not, then add
     // reconnect bot when necessary
+    let reconResp = yield (0, utils_1.reconnect)();
+    console.log(reconResp);
     console.log("done refresh Channels");
 }));
 module.exports = router;
