@@ -1,7 +1,7 @@
 import express, { Express, Request, Response } from 'express';
 import * as fs from "fs";
 import { pool } from "./dbconfig";
-import { saveDB } from './utils';
+import { getBotFollowers, reconnect, saveDB } from './utils';
 const router = express.Router()
 
 router.get('/', (req, res) => {
@@ -179,4 +179,88 @@ router.post('/channels/saveGenSettings/:channel', (req, res) => {
             }
         })
 })
+
+
+router.get('/refreshChannels', async (req,res) => {
+    // get bot_ng_bayan followers 
+    console.log("called refresh Channels");
+     let botFollowers =  await getBotFollowers()
+     console.log(botFollowers);     
+     
+
+    let botfollowerchannels = botFollowers.data.map((p:any) => {return p.from_login})
+    
+    // get speeeedtv followers
+
+        //let speedFollowers = await getSpeedFollowers()
+
+        //console.log(speedFollowers);
+
+        //res.send(speedFollowers);
+        
+    // crossmatch both list
+
+    // check if channel already exist in database
+    console.log(botfollowerchannels)
+    
+    botfollowerchannels.forEach((channelName: string) => {
+        pool.query("SELECT name FROM channels WHERE name=$1",
+            [channelName],
+            (err, resp) => {
+                if (err) throw err;
+
+                console.log(resp.rows);
+                // channel already exists, 
+                if (resp.rows.length > 0) {
+
+                    // res.send("Channel already exists")
+                    // do nothing
+                } else {
+                    // add new channel
+                    console.log("no channel with that name yet, trying to tadd.")
+                    let newChannel = {
+                        channel: channelName,
+                        enabled: true,
+                        soCommand: "so",
+                        soMessageEnabled: false,
+                        soMessageTemplate: "",
+                        delay: 250,
+                        filters: {
+                            vip:true,
+                            mod:true,
+                            sub: true,
+                            any: true,
+                        },
+                        customCommands: [{
+                            command: "!test",
+                            responses: [
+                                "testing laaaaang",
+                                "testing lng tlga eh"
+                            ]
+                        }]
+                    }
+
+                    pool.query("INSERT INTO channels(name,config) VALUES ($1,$2)",
+                        [channelName, JSON.stringify(newChannel)],
+                        (err2) => {
+                            if (err2) throw err2;
+
+                            console.log("no error")
+                            console.log("Channel + " + channelName + "added")
+                            //res.send("Channel + " + channelName + "added");
+                        }
+                    )
+                }
+        });
+    });
+
+    // reconnect bot when necessary
+    let reconResp = await reconnect()
+    console.log(reconResp);
+    
+    console.log("done refresh Channels");
+    res.send(botfollowerchannels);
+});
+
+
 module.exports = router

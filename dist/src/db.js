@@ -22,6 +22,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -176,4 +185,67 @@ router.post('/channels/saveGenSettings/:channel', (req, res) => {
         }
     });
 });
+router.get('/refreshChannels', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // get bot_ng_bayan followers 
+    console.log("called refresh Channels");
+    let botFollowers = yield (0, utils_1.getBotFollowers)();
+    console.log(botFollowers);
+    let botfollowerchannels = botFollowers.data.map((p) => { return p.from_login; });
+    // get speeeedtv followers
+    //let speedFollowers = await getSpeedFollowers()
+    //console.log(speedFollowers);
+    //res.send(speedFollowers);
+    // crossmatch both list
+    // check if channel already exist in database
+    console.log(botfollowerchannels);
+    botfollowerchannels.forEach((channelName) => {
+        dbconfig_1.pool.query("SELECT name FROM channels WHERE name=$1", [channelName], (err, resp) => {
+            if (err)
+                throw err;
+            console.log(resp.rows);
+            // channel already exists, 
+            if (resp.rows.length > 0) {
+                // res.send("Channel already exists")
+                // do nothing
+            }
+            else {
+                // add new channel
+                console.log("no channel with that name yet, trying to tadd.");
+                let newChannel = {
+                    channel: channelName,
+                    enabled: true,
+                    soCommand: "so",
+                    soMessageEnabled: false,
+                    soMessageTemplate: "",
+                    delay: 250,
+                    filters: {
+                        vip: true,
+                        mod: true,
+                        sub: true,
+                        any: true,
+                    },
+                    customCommands: [{
+                            command: "!test",
+                            responses: [
+                                "testing laaaaang",
+                                "testing lng tlga eh"
+                            ]
+                        }]
+                };
+                dbconfig_1.pool.query("INSERT INTO channels(name,config) VALUES ($1,$2)", [channelName, JSON.stringify(newChannel)], (err2) => {
+                    if (err2)
+                        throw err2;
+                    console.log("no error");
+                    console.log("Channel + " + channelName + "added");
+                    //res.send("Channel + " + channelName + "added");
+                });
+            }
+        });
+    });
+    // reconnect bot when necessary
+    let reconResp = yield (0, utils_1.reconnect)();
+    console.log(reconResp);
+    console.log("done refresh Channels");
+    res.send(botfollowerchannels);
+}));
 module.exports = router;
