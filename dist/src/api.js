@@ -58,6 +58,7 @@ router.get('/channels', (req, res) => {
 // define the about route
 router.get('/channels/:channel', (req, res) => {
     // get all channels
+    console.log("HANDLING GETCHANNEL");
     let db = JSON.parse(fs.readFileSync('./db.json', 'utf-8'));
     let channelname = req.params.channel;
     console.log(channelname);
@@ -65,6 +66,23 @@ router.get('/channels/:channel', (req, res) => {
     if (channel) {
         console.log(channel);
         res.send(channel);
+        return;
+    }
+    res.send('Channel not found!');
+});
+router.post('/channels/saveGenSettings/:channel', (req, res) => {
+    let db = JSON.parse(fs.readFileSync('./db.json', 'utf-8'));
+    let channelname = req.params.channel;
+    let channel = db.find((p) => { return p.channel.toLowerCase() == channelname.toLowerCase(); });
+    console.log("HANDLINBG SAVEGENSETTINGS");
+    console.log(req.body);
+    if (channel) {
+        channel.enabled = req.body.enabled;
+        channel.soCommand = req.body.soCommand;
+        channel.soMessageEnabled = req.body.soMessageEnabled;
+        channel.soMessageTemplate = req.body.soMessageTemplate;
+        (0, utils_1.saveDB)(db);
+        res.send('Channel Updated');
         return;
     }
     res.send('Channel not found!');

@@ -37,12 +37,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setupAPI = void 0;
 const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
 const api = require('./api');
+const db = require('./db');
 const dotenv = __importStar(require("dotenv"));
 const app = (0, express_1.default)();
 const bodyParser = require('body-parser');
 function setupAPI() {
     return __awaiter(this, void 0, void 0, function* () {
+        app.use((0, cors_1.default)());
         app.get('/', (req, res) => {
             res.send("HELLO FROM BOT NG BAYAN API!");
         });
@@ -50,6 +53,7 @@ function setupAPI() {
         app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
         app.use(express_1.default.static('viewer'));
         app.use('/api', api);
+        app.use('/db', db);
         //console.log(api);
         app.listen(process.env.PORT, () => {
             console.log(`⚡️[server]: Server is running at http://localhost:${process.env.PORT}`);

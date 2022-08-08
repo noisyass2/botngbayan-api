@@ -1,12 +1,14 @@
 import { promises as fs, rmSync } from 'fs';
 import express, { Express, Request, Response } from 'express';
+import cors from 'cors';
 const api = require('./api')
+const db = require('./db')
 import * as dotenv from 'dotenv';
 const app:Express = express();
 const bodyParser = require('body-parser')
 
 export async function setupAPI() {
-	
+	app.use(cors())
 	app.get('/',(req: Request, res: Response) => {
 		res.send("HELLO FROM BOT NG BAYAN API!");
 	})
@@ -15,6 +17,7 @@ export async function setupAPI() {
 	
 	app.use(express.static('viewer'));
     app.use('/api', api);
+	app.use('/db',db);
 
     //console.log(api);
 
