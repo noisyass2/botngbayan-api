@@ -1,7 +1,8 @@
+import { HelixFollow } from '@twurple/api/lib';
 import express, { Express, Request, Response } from 'express';
 import * as fs from "fs";
 import { pool } from "./dbconfig";
-import { getBotFollowers, reconnect, saveDB } from './utils';
+import { getBotFollowers, getFollowersOfBot, reconnect, saveDB } from './utils';
 const router = express.Router()
 
 router.get('/', (req, res) => {
@@ -68,9 +69,11 @@ router.get('/channels', (req, res) => {
 
 })
 
+let ctr = 0;
 router.get('/channels/:channel', (req, res) => {
     // get all channels
-    console.log("HANDLING GETCHANNEL");
+    console.log("HANDLING GETCHANNEL: " + ctr);
+    ctr++;
     let channelname = req.params.channel;
     console.log(channelname);
 
@@ -79,7 +82,6 @@ router.get('/channels/:channel', (req, res) => {
         (err, resp) => {
             if (err) throw err;
 
-            console.log(resp.rows);
             if (resp.rows.length > 0) {
                 let channel = resp.rows[0];
                 console.log(channel);
@@ -117,8 +119,8 @@ router.post('/addchannel', (req, res) => {
                     soMessageTemplate: "",
                     delay: 250,
                     filters: {
-                        vip:true,
-                        mod:true,
+                        vip: true,
+                        mod: true,
                         sub: true,
                         any: true,
                     },
@@ -147,7 +149,7 @@ router.post('/addchannel', (req, res) => {
 
 
 router.post('/channels/saveGenSettings/:channel', (req, res) => {
-   
+
     let channelname = req.params.channel;
     console.log("HANDLING SAVEGENSETTINGS");
 
@@ -166,13 +168,15 @@ router.post('/channels/saveGenSettings/:channel', (req, res) => {
                 channelConfig.soMessageEnabled = req.body.soMessageEnabled;
                 channelConfig.soMessageTemplate = req.body.soMessageTemplate;
                 channelConfig.delay = req.body.delay;
-                
+                channelConfig.filters = req.body.filters;
+                console.log(channelConfig);
+
                 pool.query("UPDATE channels set config=$1 WHERE name=$2",
-                [JSON.stringify(channelConfig), channelname],
-                (err2) => {
-                    if(err2) throw err;
-                    res.json(channelConfig)
-                })
+                    [JSON.stringify(channelConfig), channelname],
+                    (err2) => {
+                        if (err2) throw err;
+                        res.json(channelConfig)
+                    })
 
             } else {
                 res.json({ status: "success", message: "No config found for that channel" })
@@ -181,31 +185,13 @@ router.post('/channels/saveGenSettings/:channel', (req, res) => {
 })
 
 
-router.get('/refreshChannels', async (req,res) => {
-    // get bot_ng_bayan followers 
-    console.log("called refresh Channels");
-     let botFollowers =  await getBotFollowers()
-     console.log(botFollowers);     
-     
+router.get('/refreshChannels', async (req, res) => {
+    let followers: HelixFollow[] = await getFollowersOfBot("bot_ng_bayan");
+    followers.forEach(p => {
+        console.log(p.userName);
 
-    let botfollowerchannels = botFollowers.data.map((p:any) => {return p.from_login})
-    
-    // get speeeedtv followers
-
-        //let speedFollowers = await getSpeedFollowers()
-
-        //console.log(speedFollowers);
-
-        //res.send(speedFollowers);
-        
-    // crossmatch both list
-
-    // check if channel already exist in database
-    console.log(botfollowerchannels)
-    
-    botfollowerchannels.forEach((channelName: string) => {
         pool.query("SELECT name FROM channels WHERE name=$1",
-            [channelName],
+            [p.userName],
             (err, resp) => {
                 if (err) throw err;
 
@@ -219,15 +205,15 @@ router.get('/refreshChannels', async (req,res) => {
                     // add new channel
                     console.log("no channel with that name yet, trying to tadd.")
                     let newChannel = {
-                        channel: channelName,
+                        channel: p.userName,
                         enabled: true,
                         soCommand: "so",
                         soMessageEnabled: false,
                         soMessageTemplate: "",
                         delay: 250,
                         filters: {
-                            vip:true,
-                            mod:true,
+                            vip: true,
+                            mod: true,
                             sub: true,
                             any: true,
                         },
@@ -241,25 +227,20 @@ router.get('/refreshChannels', async (req,res) => {
                     }
 
                     pool.query("INSERT INTO channels(name,config) VALUES ($1,$2)",
-                        [channelName, JSON.stringify(newChannel)],
+                        [p.userName, JSON.stringify(newChannel)],
                         (err2) => {
                             if (err2) throw err2;
 
                             console.log("no error")
-                            console.log("Channel + " + channelName + "added")
+                            console.log("Channel + " + p.userName + "added")
                             //res.send("Channel + " + channelName + "added");
                         }
                     )
                 }
-        });
+            });
     });
 
-    // reconnect bot when necessary
-    let reconResp = await reconnect()
-    console.log(reconResp);
-    
-    console.log("done refresh Channels");
-    res.send(botfollowerchannels);
+    res.send(followers.map(p => p.userName).join(", "));
 });
 
 

@@ -56,9 +56,11 @@ router.get('/channels', (req, res) => {
     res.send(channels);
 });
 // define the about route
+let ctr = 0;
 router.get('/channels/:channel', (req, res) => {
     // get all channels
-    console.log("HANDLING GETCHANNEL");
+    console.log("HANDLING GETCHANNEL: " + ctr);
+    ctr++;
     let db = JSON.parse(fs.readFileSync('./db.json', 'utf-8'));
     let channelname = req.params.channel;
     console.log(channelname);

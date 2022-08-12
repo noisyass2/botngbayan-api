@@ -12,9 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reconnect = exports.getSpeedFollowers = exports.getBotFollowers = exports.saveDB = void 0;
+exports.reconnect = exports.getFollowersOfBot = exports.getSpeedFollowers = exports.getBotFollowers = exports.saveDB = void 0;
 const fs_1 = require("fs");
 const node_fetch_1 = __importDefault(require("node-fetch"));
+const auth_1 = require("@twurple/auth");
+const api_1 = require("@twurple/api");
 function saveDB(db) {
     return __awaiter(this, void 0, void 0, function* () {
         yield fs_1.promises.writeFile('./db.json', JSON.stringify(db), 'utf-8');
@@ -80,6 +82,30 @@ function getOauthToken() {
         return response;
     });
 }
+function getFollowersOfBot(channel) {
+    var _a, _b;
+    return __awaiter(this, void 0, void 0, function* () {
+        let auth = {
+            clientID: (_a = process.env.CLIENT_ID) !== null && _a !== void 0 ? _a : "",
+            clientSecret: (_b = process.env.CLIENT_SECRET) !== null && _b !== void 0 ? _b : ""
+        };
+        // console.log(auth);
+        // console.log(process.env)
+        const clientId = auth.clientID;
+        const clientSecret = auth.clientSecret;
+        const authProvider = new auth_1.ClientCredentialsAuthProvider(clientId, clientSecret);
+        const apiClient = new api_1.ApiClient({ authProvider });
+        let followers = yield apiClient.users.getUserByName(channel).then((p) => __awaiter(this, void 0, void 0, function* () {
+            let filter = {
+                followedUser: p === null || p === void 0 ? void 0 : p.id
+            };
+            let fers = yield apiClient.users.getFollowsPaginated(filter).getAll();
+            return fers;
+        }));
+        return followers;
+    });
+}
+exports.getFollowersOfBot = getFollowersOfBot;
 function reconnect() {
     return __awaiter(this, void 0, void 0, function* () {
         const followerresponse = yield (0, node_fetch_1.default)('https://bot-ng-bayan.herokuapp.com/api/reconnect').then(p => { return p; });

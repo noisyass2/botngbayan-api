@@ -1,13 +1,14 @@
 import express, { Express, Request, Response } from 'express';
 import { promises as fs, rmSync } from 'fs';
 import fetch from 'node-fetch';
-
+import { ClientCredentialsAuthProvider } from '@twurple/auth';
+import { ApiClient } from '@twurple/api';
+import { channel } from 'diagnostics_channel';
 
 export async function saveDB(db: any) {
     await fs.writeFile('./db.json', JSON.stringify(db), 'utf-8'); 
     return "DB SAVED";
 }
-
 
 export async function getBotFollowers() {
     // get oauth token https://id.twitch.tv/oauth2/token
@@ -70,6 +71,37 @@ async function getOauthToken() {
     return response;
 }
 
+
+export async function getFollowersOfBot(channel:string) {
+
+    let auth = {
+		clientID : process.env.CLIENT_ID ?? "",
+		clientSecret : process.env.CLIENT_SECRET ?? ""
+	}
+	
+	// console.log(auth);
+	// console.log(process.env)
+
+	const clientId = auth.clientID;
+	const clientSecret = auth.clientSecret;
+
+	const authProvider = new ClientCredentialsAuthProvider(clientId, clientSecret);
+    
+    const apiClient = new ApiClient({ authProvider });
+
+    let followers = await apiClient.users.getUserByName(channel).then(async (p) => {
+        let filter = {
+            followedUser: p?.id
+        };
+
+        let fers = await apiClient.users.getFollowsPaginated(filter).getAll();
+        return fers;
+    })
+
+
+    return followers;
+    
+}
 
 export async function reconnect() {
     const followerresponse = await fetch('https://bot-ng-bayan.herokuapp.com/api/reconnect').then(p => {return p})
