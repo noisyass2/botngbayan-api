@@ -237,4 +237,11 @@ router.get('/refreshChannels', (req, res) => __awaiter(void 0, void 0, void 0, f
     });
     res.send(followers.map(p => p.userName).join(", "));
 }));
+router.get('/getChannelInfo/:user', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let chInfo = yield (0, utils_1.getUserLastPlayedGame)(req.params.user);
+    if (chInfo) {
+        const { displayName, gameName, title, name } = chInfo;
+        res.json({ displayName, gameName, title, name });
+    }
+}));
 module.exports = router;

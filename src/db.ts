@@ -2,7 +2,7 @@ import { HelixFollow } from '@twurple/api/lib';
 import express, { Express, Request, Response } from 'express';
 import * as fs from "fs";
 import { pool } from "./dbconfig";
-import { getBotFollowers, getFollowersOfBot, reconnect, saveDB } from './utils';
+import { getBotFollowers, getFollowersOfBot, getUserLastPlayedGame, reconnect, saveDB } from './utils';
 const router = express.Router()
 
 router.get('/', (req, res) => {
@@ -243,5 +243,14 @@ router.get('/refreshChannels', async (req, res) => {
     res.send(followers.map(p => p.userName).join(", "));
 });
 
+
+router.get('/getChannelInfo/:user', async (req,res) => {
+   let chInfo =  await getUserLastPlayedGame(req.params.user)
+   if(chInfo) {
+    const { displayName, gameName, title, name } = chInfo;
+    res.json({ displayName, gameName, title, name });
+   }
+   
+})
 
 module.exports = router

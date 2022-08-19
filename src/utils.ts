@@ -4,6 +4,23 @@ import fetch from 'node-fetch';
 import { ClientCredentialsAuthProvider } from '@twurple/auth';
 import { ApiClient } from '@twurple/api';
 import { channel } from 'diagnostics_channel';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+let auth = {
+    clientID : process.env.CLIENT_ID ?? "",
+    clientSecret : process.env.CLIENT_SECRET ?? ""
+}
+
+console.log(auth);
+// console.log(process.env)
+
+const clientId = auth.clientID;
+const clientSecret = auth.clientSecret;
+
+const authProvider = new ClientCredentialsAuthProvider(clientId, clientSecret);
+
+const apiClient = new ApiClient({ authProvider });
 
 export async function saveDB(db: any) {
     await fs.writeFile('./db.json', JSON.stringify(db), 'utf-8'); 
@@ -74,20 +91,7 @@ async function getOauthToken() {
 
 export async function getFollowersOfBot(channel:string) {
 
-    let auth = {
-		clientID : process.env.CLIENT_ID ?? "",
-		clientSecret : process.env.CLIENT_SECRET ?? ""
-	}
-	
-	// console.log(auth);
-	// console.log(process.env)
-
-	const clientId = auth.clientID;
-	const clientSecret = auth.clientSecret;
-
-	const authProvider = new ClientCredentialsAuthProvider(clientId, clientSecret);
     
-    const apiClient = new ApiClient({ authProvider });
 
     let followers = await apiClient.users.getUserByName(channel).then(async (p) => {
         let filter = {
@@ -101,6 +105,24 @@ export async function getFollowersOfBot(channel:string) {
 
     return followers;
     
+}
+
+export async function getUserLastPlayedGame(user:string) {
+
+    let channelInfo = await apiClient.users.getUserByName(user).then(async (p) => {
+        let userId = p?.id;
+        console.log(userId);
+        if(userId){
+            let chInfo = await apiClient.channels.getChannelInfoById(userId);
+            console.log(chInfo);
+            return chInfo;
+        }else{
+            return null;
+        }
+    })
+
+    return channelInfo;
+
 }
 
 export async function reconnect() {
