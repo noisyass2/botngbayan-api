@@ -244,4 +244,51 @@ router.get('/getChannelInfo/:user', (req, res) => __awaiter(void 0, void 0, void
         res.json({ displayName, gameName, title, name });
     }
 }));
+router.post('/addCount/:channel/:num', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    dbconfig_1.pool.query("SELECT stats FROM stats WHERE id=1", (err, resp) => {
+        if (err)
+            throw err;
+        console.log(resp.rows);
+        console.log(resp.rows[0]);
+        if (resp.rows.length > 0) {
+            let channelCounts = JSON.parse(resp.rows[0].stats);
+            console.log(channelCounts);
+            let channel = channelCounts.find((p) => {
+                return p.name == req.params.channel;
+            });
+            if (channel) {
+                channel.soCount += parseInt(req.params.num);
+                console.log(channelCounts);
+            }
+            else {
+                // channel does not exist yet.
+                let newChannel = {
+                    name: req.params.channel,
+                    soCount: 1
+                };
+                channelCounts.push(newChannel);
+            }
+            dbconfig_1.pool.query("UPDATE stats SET stats=$1 WHERE id=1", [JSON.stringify(channelCounts)], (err, result) => {
+                if (err)
+                    throw err;
+                //console.log(result);
+                res.json({ status: "success", message: "Counts added for channel " + req.params.channel });
+            });
+        }
+    });
+}));
+router.get('/getCounts', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    dbconfig_1.pool.query("SELECT stats FROM stats WHERE id=1", (err, resp) => {
+        if (err) {
+            throw err;
+        }
+        console.log(resp.rows);
+        if (resp.rows.length > 0) {
+            res.json({ status: "success", data: resp.rows[0] });
+        }
+        else {
+            res.json({ status: "success", data: "no data yet" });
+        }
+    });
+}));
 module.exports = router;

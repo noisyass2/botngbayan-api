@@ -146,7 +146,7 @@ router.post('/addchannel', (req, res) => {
         });
 
 })
-
+  
 
 router.post('/channels/saveGenSettings/:channel', (req, res) => {
 
@@ -243,7 +243,6 @@ router.get('/refreshChannels', async (req, res) => {
     res.send(followers.map(p => p.userName).join(", "));
 });
 
-
 router.get('/getChannelInfo/:user', async (req,res) => {
    let chInfo =  await getUserLastPlayedGame(req.params.user)
    if(chInfo) {
@@ -252,5 +251,56 @@ router.get('/getChannelInfo/:user', async (req,res) => {
    }
    
 })
+
+router.post('/addCount/:channel/:num', async (req,res) => {
+    pool.query("SELECT stats FROM stats WHERE id=1",(err, resp) => {
+        if (err) throw err;
+
+        console.log(resp.rows);
+        console.log(resp.rows[0]);
+        if (resp.rows.length > 0) {
+            let channelCounts = JSON.parse(resp.rows[0].stats)
+            console.log(channelCounts);
+            let channel = channelCounts.find((p: any) => {
+                return p.name == req.params.channel;
+            })
+
+            if(channel){
+                channel.soCount += parseInt(req.params.num);
+                console.log(channelCounts);
+            }else{
+                // channel does not exist yet.
+                let newChannel = {
+                    name: req.params.channel,
+                    soCount : 1
+                }
+                channelCounts.push(newChannel);
+            }
+
+            pool.query("UPDATE stats SET stats=$1 WHERE id=1", [JSON.stringify(channelCounts)],
+            (err,result) => {
+                if(err) throw err;
+                //console.log(result);
+                res.json({status: "success", message: "Counts added for channel " + req.params.channel })
+            })
+        }
+    });
+})
+
+router.get('/getCounts',async (req,res) => {
+    pool.query("SELECT stats FROM stats WHERE id=1",(err, resp) => {
+        if (err) {
+            throw err;
+        }
+        console.log(resp.rows);
+        if(resp.rows.length > 0) {
+            res.json({status: "success", data: resp.rows[0]})
+        }else{
+            res.json({status: "success", data: "no data yet"})
+        }
+
+    });
+});
+
 
 module.exports = router
