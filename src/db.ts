@@ -145,7 +145,7 @@ router.post('/addchannel', (req, res) => {
         });
 
 })
-
+  
 
 
 router.post('/channels/saveGenSettings/:channel', (req, res) => {
@@ -242,18 +242,17 @@ router.get('/refreshChannels', async (req, res) => {
     res.send(followers.map(p => p.userName).join(", "));
 });
 
-
-router.get('/getChannelInfo/:user', async (req, res) => {
-    let chInfo = await getUserLastPlayedGame(req.params.user)
-    if (chInfo) {
-        const { displayName, gameName, title, name } = chInfo;
-        res.json({ displayName, gameName, title, name });
-    }
-
+router.get('/getChannelInfo/:user', async (req,res) => {
+   let chInfo =  await getUserLastPlayedGame(req.params.user)
+   if(chInfo) {
+    const { displayName, gameName, title, name } = chInfo;
+    res.json({ displayName, gameName, title, name });
+   }
+   
 })
 
-router.post('/addCount/:channel/:num', async (req, res) => {
-    pool.query("SELECT stats FROM stats WHERE id=1", (err, resp) => {
+router.post('/addCount/:channel/:num', async (req,res) => {
+    pool.query("SELECT stats FROM stats WHERE id=1",(err, resp) => {
         if (err) throw err;
 
         console.log(resp.rows);
@@ -265,59 +264,42 @@ router.post('/addCount/:channel/:num', async (req, res) => {
                 return p.name == req.params.channel;
             })
 
-            if (channel) {
+            if(channel){
                 channel.soCount += parseInt(req.params.num);
                 console.log(channelCounts);
-            } else {
+            }else{
                 // channel does not exist yet.
                 let newChannel = {
                     name: req.params.channel,
-                    soCount: 1
+                    soCount : 1
                 }
                 channelCounts.push(newChannel);
             }
 
             pool.query("UPDATE stats SET stats=$1 WHERE id=1", [JSON.stringify(channelCounts)],
-                (err, result) => {
-                    if (err) throw err;
-                    //console.log(result);
-                    res.json({ status: "success", message: "Counts added for channel " + req.params.channel })
-                })
+            (err,result) => {
+                if(err) throw err;
+                //console.log(result);
+                res.json({status: "success", message: "Counts added for channel " + req.params.channel })
+            })
         }
     });
 })
 
-router.get('/getCounts', async (req, res) => {
-    pool.query("SELECT stats FROM stats WHERE id=1", (err, resp) => {
+router.get('/getCounts',async (req,res) => {
+    pool.query("SELECT stats FROM stats WHERE id=1",(err, resp) => {
         if (err) {
             throw err;
         }
         console.log(resp.rows);
-        if (resp.rows.length > 0) {
-            res.json({ status: "success", data: resp.rows[0] })
-        } else {
-            res.json({ status: "success", data: "no data yet" })
+        if(resp.rows.length > 0) {
+            res.json({status: "success", data: resp.rows[0]})
+        }else{
+            res.json({status: "success", data: "no data yet"})
         }
 
     });
 });
 
-router.get('/getDB', (req, res) => {
-    // get all channels
-    console.log("called db/channels");
-
-    pool.query("SELECT * FROM channels",
-        (err, resp) => {
-            if (err) throw err;
-
-            console.log(resp.rows);
-            if (resp.rows.length > 0) {
-                res.json(resp.rows);
-            } else {
-                res.send("No Channels yet")
-            }
-        })
-
-})
 
 module.exports = router
