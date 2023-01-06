@@ -146,8 +146,6 @@ router.post('/addchannel', (req, res) => {
 
 })
   
-
-
 router.post('/channels/saveGenSettings/:channel', (req, res) => {
 
     let channelname = req.params.channel;
@@ -301,5 +299,22 @@ router.get('/getCounts',async (req,res) => {
     });
 });
 
+router.get('/getDB', (req, res) => {
+    // get all channels
+    console.log("called db/channels");
+
+    pool.query("SELECT * FROM channels",
+        (err, resp) => {
+            if (err) throw err;
+
+            console.log(resp.rows);
+            if (resp.rows.length > 0) {
+                res.json(resp.rows);
+            } else {
+                res.send("No Channels yet")
+            }
+        })
+
+})
 
 module.exports = router

@@ -291,4 +291,19 @@ router.get('/getCounts', (req, res) => __awaiter(void 0, void 0, void 0, functio
         }
     });
 }));
+router.get('/getDB', (req, res) => {
+    // get all channels
+    console.log("called db/channels");
+    dbconfig_1.pool.query("SELECT * FROM channels", (err, resp) => {
+        if (err)
+            throw err;
+        console.log(resp.rows);
+        if (resp.rows.length > 0) {
+            res.json(resp.rows);
+        }
+        else {
+            res.send("No Channels yet");
+        }
+    });
+});
 module.exports = router;
