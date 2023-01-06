@@ -67,7 +67,7 @@ export async function getSpeedFollowers() {
     return followerdata;
 }
 
-async function getOauthToken() {
+export async function getOauthToken() {
     const params = new URLSearchParams();
     params.append('client_id', 'wn0kh59nora97ep39mfk57mzoyuvh5');
     params.append('client_secret', 'mk8xsg2znv5e5twczq2dd3a0752gcd');

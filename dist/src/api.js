@@ -224,4 +224,8 @@ router.get('/refreshChannels', (req, res) => __awaiter(void 0, void 0, void 0, f
     console.log(reconResp);
     console.log("done refresh Channels");
 }));
+router.get('/authToken', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const token = yield (0, utils_1.getOauthToken)();
+    res.json(token);
+}));
 module.exports = router;

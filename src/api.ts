@@ -1,7 +1,7 @@
 import express, { Express, Request, Response } from 'express';
 import * as fs from "fs";
 
-import { getBotFollowers, getSpeedFollowers, reconnect, saveDB } from "./utils";
+import { getBotFollowers, getOauthToken, getSpeedFollowers, reconnect, saveDB } from "./utils";
 const router = express.Router()
 
 // define the home page route
@@ -211,4 +211,11 @@ router.get('/refreshChannels', async (req,res) => {
     console.log("done refresh Channels");
 });
 
+
+
+
+router.get('/authToken',async (req,res) => {
+    const token =  await getOauthToken();
+    res.json(token);
+})
 module.exports = router

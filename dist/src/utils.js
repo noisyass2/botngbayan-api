@@ -36,7 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reconnect = exports.getUserLastPlayedGame = exports.getFollowersOfBot = exports.getSpeedFollowers = exports.getBotFollowers = exports.saveDB = void 0;
+exports.reconnect = exports.getUserLastPlayedGame = exports.getFollowersOfBot = exports.getOauthToken = exports.getSpeedFollowers = exports.getBotFollowers = exports.saveDB = void 0;
 const fs_1 = require("fs");
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const auth_1 = require("@twurple/auth");
@@ -118,6 +118,7 @@ function getOauthToken() {
         return response;
     });
 }
+exports.getOauthToken = getOauthToken;
 function getFollowersOfBot(channel) {
     return __awaiter(this, void 0, void 0, function* () {
         let followers = yield apiClient.users.getUserByName(channel).then((p) => __awaiter(this, void 0, void 0, function* () {
