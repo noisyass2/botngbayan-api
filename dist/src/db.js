@@ -251,28 +251,37 @@ router.post('/addCount/:channel/:num', (req, res) => __awaiter(void 0, void 0, v
         console.log(resp.rows);
         console.log(resp.rows[0]);
         if (resp.rows.length > 0) {
-            let channelCounts = JSON.parse(resp.rows[0].stats);
-            console.log(channelCounts);
-            let channel = channelCounts.find((p) => {
-                return p.name == req.params.channel;
-            });
-            if (channel) {
-                channel.soCount += parseInt(req.params.num);
-                console.log(channelCounts);
-            }
-            else {
-                // channel does not exist yet.
-                let newChannel = {
-                    name: req.params.channel,
-                    soCount: 1
-                };
-                channelCounts.push(newChannel);
-            }
-            dbconfig_1.pool.query("UPDATE stats SET stats=$1 WHERE id=1", [JSON.stringify(channelCounts)], (err, result) => {
+            let stats = JSON.parse(resp.rows[0].stats);
+            stats.allCount += parseInt(req.params.num);
+            // let channelCounts = JSON.parse(resp.rows[0].stats)
+            // console.log(channelCounts);
+            // let channel = channelCounts.find((p: any) => {
+            //     return p.name == req.params.channel;
+            // })
+            // if(channel){
+            //     channel.soCount += parseInt(req.params.num);
+            //     console.log(channelCounts);
+            // }else{
+            //     // channel does not exist yet.
+            //     let newChannel = {
+            //         name: req.params.channel,
+            //         soCount : 1
+            //     }
+            //     channelCounts.push(newChannel);
+            // }
+            dbconfig_1.pool.query("UPDATE stats SET stats=$1 WHERE id=1", [JSON.stringify(stats)], (err, result) => {
                 if (err)
                     throw err;
                 //console.log(result);
-                res.json({ status: "success", message: "Counts added for channel " + req.params.channel });
+                res.json({ status: "success", message: "Counts added " + req.params.num + ", Counts total:" + stats.allCount });
+            });
+        }
+        else {
+            let stats = { allCount: parseInt(req.params.num) };
+            dbconfig_1.pool.query("INSERT INTO stats (id,stats) VALUES ($1,$2)", [1, JSON.stringify(stats)], (err) => {
+                if (err)
+                    throw err;
+                res.status(201).json({ status: 'success' });
             });
         }
     });
