@@ -80,13 +80,14 @@ router.get('/loadDB', (req, res) => {
 router.get('/channels', (req, res) => {
     // get all channels
     console.log("called db/channels");
-    dbconfig_1.pool.query("SELECT name FROM channels", (err, resp) => {
+    dbconfig_1.pool.query('SELECT * FROM channels', (err, resp) => {
         if (err)
             throw err;
         console.log(resp.rows);
         if (resp.rows.length > 0) {
+            let returnData = filterRows(resp.rows);
             console.log(resp.rows.map(p => p.name).join(','));
-            res.send(resp.rows.map(p => p.name));
+            res.send(returnData);
         }
         else {
             res.send("No Channels yet");
@@ -316,3 +317,17 @@ router.get('/getDB', (req, res) => {
     });
 });
 module.exports = router;
+function filterRows(rows) {
+    let data = [];
+    rows.forEach(row => {
+        let config = JSON.parse(row.config);
+        console.log(config);
+        console.log(config.channel);
+        console.log(config["enabled"]);
+        if (config.enabled) {
+            console.log(row);
+            data.push(row.name);
+        }
+    });
+    return data;
+}
