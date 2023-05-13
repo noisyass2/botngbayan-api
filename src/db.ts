@@ -311,7 +311,6 @@ router.get('/getCounts',async (req,res) => {
 });
 
 
-
 router.get('/getDB', (req, res) => {
     // get all channels
     console.log("called db/channels");
