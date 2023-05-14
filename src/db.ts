@@ -341,7 +341,10 @@ function filterRows(rows: any[]) {
         console.log(config["enabled"]);
         if(config.enabled){
             console.log(row);
-            data.push(row.name);
+            if(row.name !== ""){
+                data.push(row.name);
+            }
+            
         }
     });
 
