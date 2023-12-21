@@ -34,7 +34,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _a, _b;
+var _a, _b, _c, _d;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.reconnect = exports.getUserLastPlayedGame = exports.getFollowersOfBot = exports.getOauthToken = exports.getSpeedFollowers = exports.getBotFollowers = exports.saveDB = void 0;
 const fs_1 = require("fs");
@@ -45,13 +45,28 @@ const dotenv = __importStar(require("dotenv"));
 dotenv.config();
 let auth = {
     clientID: (_a = process.env.CLIENT_ID) !== null && _a !== void 0 ? _a : "",
-    clientSecret: (_b = process.env.CLIENT_SECRET) !== null && _b !== void 0 ? _b : ""
+    clientSecret: (_b = process.env.CLIENT_SECRET) !== null && _b !== void 0 ? _b : "",
+    accessToken: (_c = process.env.ACCESS_TOKEN) !== null && _c !== void 0 ? _c : "",
+    refreshToken: (_d = process.env.REFRESH_TOKEN) !== null && _d !== void 0 ? _d : ""
 };
-console.log(auth);
+// console.log(auth);
 // console.log(process.env)
+// let settings = JSON.parse(await fs.readFile('./settings.json', 'utf-8'));
 const clientId = auth.clientID;
 const clientSecret = auth.clientSecret;
-const authProvider = new auth_1.ClientCredentialsAuthProvider(clientId, clientSecret);
+const accessToken = auth.accessToken;
+const refreshToken = auth.refreshToken;
+const authProvider = new auth_1.RefreshingAuthProvider({
+    clientId,
+    clientSecret
+});
+authProvider.onRefresh((userId, newTokenData) => __awaiter(void 0, void 0, void 0, function* () { return yield fs_1.promises.writeFile(`./tokens.${userId}.json`, JSON.stringify(newTokenData, null, 4)); }));
+authProvider.addUserForToken({
+    accessToken,
+    refreshToken,
+    expiresIn: null,
+    obtainmentTimestamp: 0
+}, ['chat']);
 const apiClient = new api_1.ApiClient({ authProvider });
 function saveDB(db) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -121,12 +136,18 @@ function getOauthToken() {
 exports.getOauthToken = getOauthToken;
 function getFollowersOfBot(channel) {
     return __awaiter(this, void 0, void 0, function* () {
+        console.log("GFOB");
         let followers = yield apiClient.users.getUserByName(channel).then((p) => __awaiter(this, void 0, void 0, function* () {
             let filter = {
                 followedUser: p === null || p === void 0 ? void 0 : p.id
             };
-            let fers = yield apiClient.users.getFollowsPaginated(filter).getAll();
-            return fers;
+            if (p) {
+                let follows = yield apiClient.channels.getChannelFollowersPaginated(p.id).getAll();
+                console.log(follows);
+                return follows;
+            }
+            return [];
+            // let fers = await apiClient.users.getFollowsPaginated(filter).getAll();        
         }));
         return followers;
     });
