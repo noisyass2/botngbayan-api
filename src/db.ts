@@ -1,4 +1,4 @@
-import { HelixFollow } from '@twurple/api/lib';
+import { HelixChannelFollower, HelixFollow } from '@twurple/api/lib';
 import express, { Express, Request, Response } from 'express';
 import * as fs from "fs";
 import { pool } from "./dbconfig";
@@ -98,7 +98,7 @@ router.post('/addchannel', (req, res) => {
     console.log(req.body)
     let channelName = req.body.channel;
     // find channel in db
-    pool.query("SELECT name FROM channels WHERE name=$1",
+    pool.query("SELECT name, config FROM channels WHERE name=$1",
         [channelName],
         (err, resp) => {
             if (err) throw err;
@@ -106,8 +106,23 @@ router.post('/addchannel', (req, res) => {
             console.log(resp.rows);
             // channel already exists, 
             if (resp.rows.length > 0) {
+                let channel = resp.rows[0];
+                console.log(channel);
+                let channelConfig = JSON.parse(channel.config);
+                
+                channelConfig.enabled = true;
+               
+                console.log(channelConfig);
 
-                res.send("Channel already exists")
+                pool.query("UPDATE channels set config=$1 WHERE name=$2",
+                    [JSON.stringify(channelConfig), channelName],
+                    (err2) => {
+                        if (err2) throw err;
+                        console.log("Channel already exists, set enabled to true");
+
+                        res.json(channelConfig)
+                    })
+
             } else {
                 // add new channel
                 console.log("no channel with that name yet, trying to tadd.")
@@ -147,6 +162,39 @@ router.post('/addchannel', (req, res) => {
 
 })
   
+router.post('/removeChannel', (req, res) => {
+    
+    let channelName = req.body.channel;
+    console.log("HANDLING Remove Channel");
+
+    pool.query("SELECT name,config FROM channels WHERE name=$1",
+        [channelName],
+        (err, resp) => {
+            if (err) throw err;
+
+            console.log(resp.rows);
+            if (resp.rows.length > 0) {
+                let channel = resp.rows[0];
+                console.log(channel);
+                let channelConfig = JSON.parse(channel.config);
+                
+                channelConfig.enabled = false;
+               
+                console.log(channelConfig);
+
+                pool.query("UPDATE channels set config=$1 WHERE name=$2",
+                    [JSON.stringify(channelConfig), channelName],
+                    (err2) => {
+                        if (err2) throw err;
+                        res.json(channelConfig)
+                    })
+
+            } else {
+                res.json({ status: "success", message: "No config found for that channel" })
+            }
+        })
+})
+
 router.post('/channels/saveGenSettings/:channel', (req, res) => {
 
     let channelname = req.params.channel;
@@ -184,7 +232,7 @@ router.post('/channels/saveGenSettings/:channel', (req, res) => {
 })
 
 router.get('/refreshChannels', async (req, res) => {
-    let followers: HelixFollow[] = await getFollowersOfBot("bot_ng_bayan");
+    let followers: HelixChannelFollower[] = await getFollowersOfBot("bot_ng_bayan");
     followers.forEach(p => {
         console.log(p.userName);
 
@@ -335,12 +383,12 @@ function filterRows(rows: any[]) {
     let data:any = [];
     rows.forEach(row => {
         let config = JSON.parse(row.config);
-        console.log(config);
+        // console.log(config);
 
-        console.log(config.channel);
-        console.log(config["enabled"]);
+        // console.log(config.channel);
+        // console.log(config["enabled"]);
         if(config.enabled){
-            console.log(row);
+            // console.log(row);
             if(row.name !== ""){
                 data.push(row.name);
             }
