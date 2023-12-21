@@ -1,24 +1,43 @@
 import express, { Express, Request, Response } from 'express';
 import { promises as fs, rmSync } from 'fs';
 import fetch from 'node-fetch';
-import { ClientCredentialsAuthProvider } from '@twurple/auth';
+import { AppTokenAuthProvider, RefreshingAuthProvider } from '@twurple/auth';
 import { ApiClient } from '@twurple/api';
 import { channel } from 'diagnostics_channel';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
-let auth = {
-    clientID : process.env.CLIENT_ID ?? "",
-    clientSecret : process.env.CLIENT_SECRET ?? ""
+
+let auth  = {
+    clientID: process.env.CLIENT_ID ?? "",
+    clientSecret: process.env.CLIENT_SECRET ?? "",
+    accessToken: process.env.ACCESS_TOKEN ?? "",
+    refreshToken: process.env.REFRESH_TOKEN ?? ""
 }
 
-console.log(auth);
+// console.log(auth);
 // console.log(process.env)
 
+// let settings = JSON.parse(await fs.readFile('./settings.json', 'utf-8'));
 const clientId = auth.clientID;
 const clientSecret = auth.clientSecret;
+const accessToken = auth.accessToken;
+const refreshToken = auth.refreshToken;
+const authProvider = new RefreshingAuthProvider(
+    {
+        clientId,
+        clientSecret
+    }
+);
 
-const authProvider = new ClientCredentialsAuthProvider(clientId, clientSecret);
+authProvider.onRefresh(async (userId, newTokenData) => await fs.writeFile(`./tokens.${userId}.json`, JSON.stringify(newTokenData, null, 4)));
+authProvider.addUserForToken({
+    accessToken,
+    refreshToken,
+    expiresIn: null,
+    obtainmentTimestamp: 0
+}, ['chat']);
+
 
 const apiClient = new ApiClient({ authProvider });
 
@@ -90,18 +109,19 @@ export async function getOauthToken() {
 
 
 export async function getFollowersOfBot(channel:string) {
-
-    
-
+    console.log("GFOB");
     let followers = await apiClient.users.getUserByName(channel).then(async (p) => {
         let filter = {
             followedUser: p?.id
         };
-
-        let fers = await apiClient.users.getFollowsPaginated(filter).getAll();
-        return fers;
+        if(p){            
+            let follows = await apiClient.channels.getChannelFollowersPaginated(p.id).getAll();
+            console.log(follows);
+            return follows;
+        }
+        return [];
+        // let fers = await apiClient.users.getFollowsPaginated(filter).getAll();        
     })
-
 
     return followers;
     
