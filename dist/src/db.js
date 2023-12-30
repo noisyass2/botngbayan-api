@@ -205,12 +205,26 @@ router.post('/channels/saveGenSettings/:channel', (req, res) => {
             let channel = resp.rows[0];
             console.log(channel);
             let channelConfig = JSON.parse(channel.config);
-            channelConfig.enabled = req.body.enabled;
-            channelConfig.soCommand = req.body.soCommand;
-            channelConfig.soMessageEnabled = req.body.soMessageEnabled;
-            channelConfig.soMessageTemplate = req.body.soMessageTemplate;
-            channelConfig.delay = req.body.delay;
-            channelConfig.filters = req.body.filters;
+            if (req.body.enabled !== undefined)
+                channelConfig.enabled = req.body.enabled;
+            if (req.body.soCommand !== undefined)
+                channelConfig.soCommand = req.body.soCommand;
+            if (req.body.soMessageEnabled !== undefined)
+                channelConfig.soMessageEnabled = req.body.soMessageEnabled;
+            if (req.body.soMessageTemplate !== undefined)
+                channelConfig.soMessageTemplate = req.body.soMessageTemplate;
+            if (req.body.delay !== undefined)
+                channelConfig.delay = req.body.delay;
+            if (req.body.filters !== undefined) {
+                if (req.body.filters.vip !== undefined)
+                    channelConfig.filters.vip = req.body.filters.vip;
+                if (req.body.filters.mod !== undefined)
+                    channelConfig.filters.mod = req.body.filters.mod;
+                if (req.body.filters.sub !== undefined)
+                    channelConfig.filters.sub = req.body.filters.sub;
+                if (req.body.filters.any !== undefined)
+                    channelConfig.filters.any = req.body.filters.any;
+            }
             console.log(channelConfig);
             dbconfig_1.pool.query("UPDATE channels set config=$1 WHERE name=$2", [JSON.stringify(channelConfig), channelname], (err2) => {
                 if (err2)
