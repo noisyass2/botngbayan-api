@@ -194,6 +194,93 @@ router.post('/removeChannel', (req, res) => {
         }
     });
 });
+router.post('/addcmd', (req, res) => {
+    console.log(req.params);
+    console.log(req.body);
+    let channelName = req.body.channel;
+    let command = req.body.command;
+    let message = req.body.message;
+    // find channel in db
+    dbconfig_1.pool.query("SELECT name, config FROM channels WHERE name=$1", [channelName], (err, resp) => {
+        if (err)
+            throw err;
+        console.log(resp.rows);
+        // channel already exists, 
+        if (resp.rows.length > 0) {
+            let channel = resp.rows[0];
+            console.log(channel);
+            let channelConfig = JSON.parse(channel.config);
+            let returnMsg = "";
+            channelConfig.enabled = true;
+            let customCommand = channelConfig.customCommands.find((p) => p.command == command);
+            if (customCommand) {
+                // command already exists, just add response
+                customCommand.responses.push(message);
+                returnMsg = ("Command already exists, response message added!");
+            }
+            else {
+                // command is new, save command
+                channelConfig.customCommands.push({
+                    command: command,
+                    responses: [message]
+                });
+                returnMsg = ("New Command added!" + command);
+            }
+            console.log(channelConfig);
+            dbconfig_1.pool.query("UPDATE channels set config=$1 WHERE name=$2", [JSON.stringify(channelConfig), channelName], (err2) => {
+                if (err2)
+                    throw err;
+                console.log(returnMsg);
+                res.json(channelConfig);
+            });
+        }
+        else {
+            // do nothing
+            res.send({ "success": true, "message": "channel not exist" });
+        }
+    });
+});
+router.post('/delcmd', (req, res) => {
+    console.log(req.params);
+    console.log(req.body);
+    let channelName = req.body.channel;
+    let command = req.body.command;
+    let message = req.body.message;
+    // find channel in db
+    dbconfig_1.pool.query("SELECT name, config FROM channels WHERE name=$1", [channelName], (err, resp) => {
+        if (err)
+            throw err;
+        console.log(resp.rows);
+        // channel already exists, 
+        if (resp.rows.length > 0) {
+            let channel = resp.rows[0];
+            console.log(channel);
+            let channelConfig = JSON.parse(channel.config);
+            let returnMsg = "";
+            channelConfig.enabled = true;
+            let customCommand = channelConfig.customCommands.find((p) => p.command == command);
+            if (customCommand) {
+                // command already exists, just add response
+                channelConfig.customCommands = channelConfig.customCommands.filter((p) => p.command !== command);
+                returnMsg = ("Command exists, command deleted !");
+                dbconfig_1.pool.query("UPDATE channels set config=$1 WHERE name=$2", [JSON.stringify(channelConfig), channelName], (err2) => {
+                    if (err2)
+                        throw err;
+                    console.log(channelConfig);
+                    res.send(returnMsg);
+                });
+            }
+            else {
+                returnMsg = ("Command not found");
+            }
+            console.log(channelConfig);
+        }
+        else {
+            // do nothing
+            res.send({ "success": true, "message": "channel not exist" });
+        }
+    });
+});
 router.post('/channels/saveGenSettings/:channel', (req, res) => {
     let channelname = req.params.channel;
     console.log("HANDLING SAVEGENSETTINGS");
