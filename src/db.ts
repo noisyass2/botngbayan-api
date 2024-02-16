@@ -239,7 +239,7 @@ router.post('/addcmd',(req,res) => {
                     (err2) => {
                         if (err2) throw err;
                         console.log(returnMsg)
-                        res.json(channelConfig)
+                        res.json(returnMsg)
                     })
 
             } else {
