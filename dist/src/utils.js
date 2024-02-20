@@ -36,7 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _a, _b, _c, _d;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reconnect = exports.getUserLastPlayedGame = exports.getFollowersOfBot = exports.getOauthToken = exports.getSpeedFollowers = exports.getBotFollowers = exports.saveDB = void 0;
+exports.reconnect = exports.getLiveChannels = exports.getUserLastPlayedGame = exports.getFollowersOfBot = exports.getOauthToken = exports.getSpeedFollowers = exports.getBotFollowers = exports.saveDB = void 0;
 const fs_1 = require("fs");
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const auth_1 = require("@twurple/auth");
@@ -171,6 +171,18 @@ function getUserLastPlayedGame(user) {
     });
 }
 exports.getUserLastPlayedGame = getUserLastPlayedGame;
+function getLiveChannels(channels) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log("GLC");
+        let streams = yield apiClient.streams.getStreamsPaginated({
+            type: 'live',
+            userName: channels
+        });
+        console.log(streams);
+        return streams;
+    });
+}
+exports.getLiveChannels = getLiveChannels;
 function reconnect() {
     return __awaiter(this, void 0, void 0, function* () {
         const followerresponse = yield (0, node_fetch_1.default)('https://bot-ng-bayan.herokuapp.com/api/reconnect').then(p => { return p; });

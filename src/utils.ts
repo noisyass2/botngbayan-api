@@ -145,7 +145,23 @@ export async function getUserLastPlayedGame(user:string) {
 
 }
 
+export async function getLiveChannels(channels:string[]) {
+    
+    console.log("GLC");
+    let streams = await apiClient.streams.getStreamsPaginated({
+        type : 'live',
+        userName: channels
+    })
+
+    console.log(streams);
+    
+    return streams;
+    
+}
+
 export async function reconnect() {
     const followerresponse = await fetch('https://bot-ng-bayan.herokuapp.com/api/reconnect').then(p => {return p})
     return "done";
 }
+
+

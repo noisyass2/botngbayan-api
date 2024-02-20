@@ -2,7 +2,7 @@ import { HelixChannelFollower, HelixFollow } from '@twurple/api/lib';
 import express, { Express, Request, Response } from 'express';
 import * as fs from "fs";
 import { pool } from "./dbconfig";
-import { getBotFollowers, getFollowersOfBot, getUserLastPlayedGame, reconnect, saveDB } from './utils';
+import { getBotFollowers, getFollowersOfBot, getUserLastPlayedGame, reconnect, saveDB, getLiveChannels } from './utils';
 const router = express.Router()
 
 router.get('/', (req, res) => {
@@ -55,13 +55,15 @@ router.get('/channels', (req, res) => {
     console.log("called db/channels");
     
     pool.query('SELECT * FROM channels',
-        (err, resp) => {
+        async (err, resp) => {
             if (err) throw err;
 
             console.log(resp.rows);
             if (resp.rows.length > 0) {
                 let returnData = filterRows(resp.rows);
-                console.log(resp.rows.map(p => p.name).join(','));
+                console.log("FILTER ROWS:")
+                console.log(returnData)
+                
                 res.send(returnData)
             } else {
                 res.send("No Channels yet")
@@ -302,8 +304,6 @@ router.post('/delcmd',(req,res) => {
         });
 });
 
-
-
 router.post('/channels/saveGenSettings/:channel', (req, res) => {
 
     let channelname = req.params.channel;
@@ -491,6 +491,36 @@ router.get('/getDB', (req, res) => {
 
 })
 
+router.get('/getLive', async (req,res) => {
+    let streams = await getLiveChannels(["speeeedtv","fpvspeed","itsgillibean"]);
+    
+    let lives = await streams.getAll()
+    lives.forEach(live => {
+        console.log(live.userName)
+    });
+
+    res.json(lives);
+})
+
+router.get('/getLiveChannels', async(req,res) => {
+    
+    pool.query('SELECT * FROM channels',
+        async (err, resp) => {
+            if (err) throw err;
+
+            console.log(resp.rows);
+            if (resp.rows.length > 0) {
+                let returnData = filterRows(resp.rows);
+                console.log("FILTER ROWS:")
+                console.log(returnData)
+                let liveNames = await filterLive(returnData);
+                console.log(liveNames)
+                res.send(liveNames)
+            } else {
+                res.send("No Channels yet")
+            }
+        })
+})
 module.exports = router
 
 function filterRows(rows: any[]) {
@@ -510,5 +540,28 @@ function filterRows(rows: any[]) {
         }
     });
 
+    return data;
+}
+
+async function filterLive(rows: any[]) {
+    let data:any = []
+    for (let i = 0; i < rows.length / 99; i++) {
+        let usernames = rows.slice(i,(i+1)*99);
+        console.log("UNAMES:")
+        console.log(usernames)
+        if(usernames.length > 0){
+                
+            let liveNames = await getLiveChannels(usernames);
+            console.log(liveNames)
+            let lives = await liveNames.getAll().catch((reason) => {console.log(reason); return [];});
+            console.log(lives);
+            lives.forEach(live => {
+                // console.log(live.userName);
+                data.push(live.userName);
+            });
+            
+        }
+    }
+    console.log(data);
     return data;
 }
