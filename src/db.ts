@@ -2,7 +2,7 @@ import { HelixChannelFollower, HelixFollow } from '@twurple/api/lib';
 import express, { Express, Request, Response } from 'express';
 import * as fs from "fs";
 import { pool } from "./dbconfig";
-import { getBotFollowers, getFollowersOfBot, getUserLastPlayedGame, reconnect, saveDB, getLiveChannels } from './utils';
+import { getBotFollowers, getFollowersOfBot, getUserLastPlayedGame, reconnect, saveDB, getLiveChannels, getFollowage } from './utils';
 const router = express.Router()
 
 router.get('/', (req, res) => {
@@ -521,6 +521,11 @@ router.get('/getLiveChannels', async(req,res) => {
             }
         })
 })
+
+router.get('/getFollowage/:channel', async(req,res) => {
+    res.json(await getFollowage(req.params.channel))
+})
+
 module.exports = router
 
 function filterRows(rows: any[]) {

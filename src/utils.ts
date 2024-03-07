@@ -5,6 +5,7 @@ import { AppTokenAuthProvider, RefreshingAuthProvider } from '@twurple/auth';
 import { ApiClient } from '@twurple/api';
 import { channel } from 'diagnostics_channel';
 import * as dotenv from 'dotenv';
+import moment from 'moment';
 
 dotenv.config();
 
@@ -159,9 +160,29 @@ export async function getLiveChannels(channels:string[]) {
     
 }
 
+export async function getFollowage(channel:string) {
+    console.log("GFW:" + channel);
+    
+    // let apiClient2 = new ApiClient({ authProvider });
+    let user = await apiClient.users.getUserByName(channel);
+    console.log(user?.id);
+    let channels = await apiClient.channels.getChannelFollowers(807926669,user?.id);
+    console.log(channels);
+    let userChannel = channels.data.at(0);
+
+    if(userChannel?.userDisplayName.toLowerCase() === channel.toLowerCase()){
+        return "Give some love to " + userChannel.userDisplayName + "!!! They have been following since " + moment(userChannel.followDate).fromNow();
+    }else {
+        return channel + " has not followed yet";
+    }
+
+}
+
+
 export async function reconnect() {
     const followerresponse = await fetch('https://bot-ng-bayan.herokuapp.com/api/reconnect').then(p => {return p})
     return "done";
 }
+
 
 

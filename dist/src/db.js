@@ -88,9 +88,7 @@ router.get('/channels', (req, res) => {
             let returnData = filterRows(resp.rows);
             console.log("FILTER ROWS:");
             console.log(returnData);
-            let liveNames = yield filterLive(returnData);
-            console.log(liveNames);
-            res.send(liveNames);
+            res.send(returnData);
         }
         else {
             res.send("No Channels yet");
@@ -461,6 +459,27 @@ router.get('/getLive', (req, res) => __awaiter(void 0, void 0, void 0, function*
         console.log(live.userName);
     });
     res.json(lives);
+}));
+router.get('/getLiveChannels', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    dbconfig_1.pool.query('SELECT * FROM channels', (err, resp) => __awaiter(void 0, void 0, void 0, function* () {
+        if (err)
+            throw err;
+        console.log(resp.rows);
+        if (resp.rows.length > 0) {
+            let returnData = filterRows(resp.rows);
+            console.log("FILTER ROWS:");
+            console.log(returnData);
+            let liveNames = yield filterLive(returnData);
+            console.log(liveNames);
+            res.send(liveNames);
+        }
+        else {
+            res.send("No Channels yet");
+        }
+    }));
+}));
+router.get('/getFollowage/:channel', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    res.json(yield (0, utils_1.getFollowage)(req.params.channel));
 }));
 module.exports = router;
 function filterRows(rows) {
