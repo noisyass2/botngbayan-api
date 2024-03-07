@@ -36,12 +36,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _a, _b, _c, _d;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reconnect = exports.getUserLastPlayedGame = exports.getFollowersOfBot = exports.getOauthToken = exports.getSpeedFollowers = exports.getBotFollowers = exports.saveDB = void 0;
+exports.reconnect = exports.getFollowage = exports.getLiveChannels = exports.getUserLastPlayedGame = exports.getFollowersOfBot = exports.getOauthToken = exports.getSpeedFollowers = exports.getBotFollowers = exports.saveDB = void 0;
 const fs_1 = require("fs");
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const auth_1 = require("@twurple/auth");
 const api_1 = require("@twurple/api");
 const dotenv = __importStar(require("dotenv"));
+const moment_1 = __importDefault(require("moment"));
 dotenv.config();
 let auth = {
     clientID: (_a = process.env.CLIENT_ID) !== null && _a !== void 0 ? _a : "",
@@ -171,6 +172,36 @@ function getUserLastPlayedGame(user) {
     });
 }
 exports.getUserLastPlayedGame = getUserLastPlayedGame;
+function getLiveChannels(channels) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log("GLC");
+        let streams = yield apiClient.streams.getStreamsPaginated({
+            type: 'live',
+            userName: channels
+        });
+        console.log(streams);
+        return streams;
+    });
+}
+exports.getLiveChannels = getLiveChannels;
+function getFollowage(channel) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log("GFW:" + channel);
+        // let apiClient2 = new ApiClient({ authProvider });
+        let user = yield apiClient.users.getUserByName(channel);
+        console.log(user === null || user === void 0 ? void 0 : user.id);
+        let channels = yield apiClient.channels.getChannelFollowers(807926669, user === null || user === void 0 ? void 0 : user.id);
+        console.log(channels);
+        let userChannel = channels.data.at(0);
+        if ((userChannel === null || userChannel === void 0 ? void 0 : userChannel.userDisplayName.toLowerCase()) === channel.toLowerCase()) {
+            return "Give some love to " + userChannel.userDisplayName + "!!! They have been following since " + (0, moment_1.default)(userChannel.followDate).fromNow();
+        }
+        else {
+            return channel + " has not followed yet";
+        }
+    });
+}
+exports.getFollowage = getFollowage;
 function reconnect() {
     return __awaiter(this, void 0, void 0, function* () {
         const followerresponse = yield (0, node_fetch_1.default)('https://bot-ng-bayan.herokuapp.com/api/reconnect').then(p => { return p; });

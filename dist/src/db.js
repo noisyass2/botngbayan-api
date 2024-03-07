@@ -80,19 +80,20 @@ router.get('/loadDB', (req, res) => {
 router.get('/channels', (req, res) => {
     // get all channels
     console.log("called db/channels");
-    dbconfig_1.pool.query('SELECT * FROM channels', (err, resp) => {
+    dbconfig_1.pool.query('SELECT * FROM channels', (err, resp) => __awaiter(void 0, void 0, void 0, function* () {
         if (err)
             throw err;
         console.log(resp.rows);
         if (resp.rows.length > 0) {
             let returnData = filterRows(resp.rows);
-            console.log(resp.rows.map(p => p.name).join(','));
+            console.log("FILTER ROWS:");
+            console.log(returnData);
             res.send(returnData);
         }
         else {
             res.send("No Channels yet");
         }
-    });
+    }));
 });
 let ctr = 0;
 router.get('/channels/:channel', (req, res) => {
@@ -451,6 +452,35 @@ router.get('/getDB', (req, res) => {
         }
     });
 });
+router.get('/getLive', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let streams = yield (0, utils_1.getLiveChannels)(["speeeedtv", "fpvspeed", "itsgillibean"]);
+    let lives = yield streams.getAll();
+    lives.forEach(live => {
+        console.log(live.userName);
+    });
+    res.json(lives);
+}));
+router.get('/getLiveChannels', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    dbconfig_1.pool.query('SELECT * FROM channels', (err, resp) => __awaiter(void 0, void 0, void 0, function* () {
+        if (err)
+            throw err;
+        console.log(resp.rows);
+        if (resp.rows.length > 0) {
+            let returnData = filterRows(resp.rows);
+            console.log("FILTER ROWS:");
+            console.log(returnData);
+            let liveNames = yield filterLive(returnData);
+            console.log(liveNames);
+            res.send(liveNames);
+        }
+        else {
+            res.send("No Channels yet");
+        }
+    }));
+}));
+router.get('/getFollowage/:channel', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    res.json(yield (0, utils_1.getFollowage)(req.params.channel));
+}));
 module.exports = router;
 function filterRows(rows) {
     let data = [];
@@ -467,4 +497,26 @@ function filterRows(rows) {
         }
     });
     return data;
+}
+function filterLive(rows) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let data = [];
+        for (let i = 0; i < rows.length / 99; i++) {
+            let usernames = rows.slice(i, (i + 1) * 99);
+            console.log("UNAMES:");
+            console.log(usernames);
+            if (usernames.length > 0) {
+                let liveNames = yield (0, utils_1.getLiveChannels)(usernames);
+                console.log(liveNames);
+                let lives = yield liveNames.getAll().catch((reason) => { console.log(reason); return []; });
+                console.log(lives);
+                lives.forEach(live => {
+                    // console.log(live.userName);
+                    data.push(live.userName);
+                });
+            }
+        }
+        console.log(data);
+        return data;
+    });
 }
