@@ -71,6 +71,26 @@ router.get('/channels', (req, res) => {
         })
 })
 
+router.get('/channelsmin',(req,res) => {
+    console.log("called db/channelsmin");
+
+    pool.query('SELECT * FROM channels',
+    async (err, resp) => {
+        if (err) throw err;
+
+        console.log(resp.rows);
+        if (resp.rows.length > 0) {
+            let returnData = filterRowsMin(resp.rows);
+            console.log("FILTER ROWS:")
+            console.log(returnData)
+            
+            res.send(returnData)
+        } else {
+            res.send("No Channels yet")
+        }
+    })
+})
+
 let ctr = 0;
 router.get('/channels/:channel', (req, res) => {
     // get all channels
@@ -548,6 +568,25 @@ function filterRows(rows: any[]) {
     return data;
 }
 
+function filterRowsMin(rows: any[]) {
+    let data:any = [];
+    rows.forEach(row => {
+        let config = JSON.parse(row.config);
+        // console.log(config);
+
+        // console.log(config.channel);
+        // console.log(config["enabled"]);
+        if(config.enabled){
+            // console.log(row);
+            if(row.name !== ""){
+                data.push({name: row.name, cmd: config.soCommand, delay: config.delay});
+            }
+            
+        }
+    });
+
+    return data;
+}
 async function filterLive(rows: any[]) {
     let data:any = []
     for (let i = 0; i < rows.length / 99; i++) {
